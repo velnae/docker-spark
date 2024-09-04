@@ -14,22 +14,38 @@ COPY wait-for-step.sh /
 COPY execute-step.sh /
 COPY finish-step.sh /
 
-#COPY bde-spark.css /css/org/apache/spark/ui/static/timeline-view.css
+# Instalar dependencias y preparar el entorno
+RUN apk add --no-cache \
+        curl \
+        bash \
+        openjdk8-jre \
+        python3 \
+        py3-pip \
+        python3-dev \
+        gfortran \
+        build-base \
+        musl-dev \
+        linux-headers \
+        libexecinfo-dev \
+        lapack-dev \
+        libgfortran \
+        nss \
+        libc6-compat \
+        coreutils \
+        procps
 
-RUN apk add --no-cache curl bash openjdk8-jre python3 py-pip nss libc6-compat coreutils procps \
-      && ln -s /lib64/ld-linux-x86-64.so.2 /lib/ld-linux-x86-64.so.2 \
-      && chmod +x *.sh \
-      && wget ${BASE_URL}/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz \
-      && tar -xvzf spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz \
-      && mv spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION} spark \
-      && rm spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz \
-      #&& cd /css \
-      #&& jar uf /spark/jars/spark-core_2.11-${SPARK_VERSION}.jar org/apache/spark/ui/static/timeline-view.css \
-      && cd /
+RUN ln -s /lib64/ld-linux-x86-64.so.2 /lib/ld-linux-x86-64.so.2 \
+    && pip3 install --upgrade pip \
+    && pip3 install numpy \
+    && chmod +x *.sh \
+    && wget ${BASE_URL}/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz \
+    && tar -xvzf spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz \
+    && mv spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION} spark \
+    && rm spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz \
+    && cd /
 
-#Give permission to execute scripts
+# Dar permisos para ejecutar los scripts
 RUN chmod +x /wait-for-step.sh && chmod +x /execute-step.sh && chmod +x /finish-step.sh
 
-# Fix the value of PYTHONHASHSEED
-# Note: this is needed when you use Python 3.3 or greater
+# Fijar el valor de PYTHONHASHSEED
 ENV PYTHONHASHSEED 1
