@@ -74,4 +74,18 @@ df_rfm_clustered.select("CustomerID", "Recency", "Frequency", "Monetary", "predi
 # Evaluar el modelo                                                                                                                                                                                                                           
 evaluator = ClusteringEvaluator(featuresCol="scaled_features")
 silhouette = evaluator.evaluate(df_rfm_clustered)
-print(f"Silhouette with squared euclidean distance: {silhouette}") 
+print(f"Silhouette with squared euclidean distance: {silhouette}")
+
+
+# Seleccionar solo las columnas simples que quieres guardar, excluyendo las columnas complejas
+df_rfm_clustered_simple = df_rfm_clustered.select("CustomerID", "Recency", "Frequency", "Monetary", "prediction")
+
+# Guardar en CSV
+df_rfm_clustered_simple.write.format("csv").save("hdfs://namenode:9000/output/rfm_clusters.csv")
+
+# Calcular las Estadísticas Descriptivas por Cluster
+df_rfm_clustered.groupBy("prediction") \
+    .agg(F.round(F.mean("Recency"), 2).alias("Avg_Recency"),
+         F.round(F.mean("Frequency"), 2).alias("Avg_Frequency"),
+         F.round(F.mean("Monetary"), 2).alias("Avg_Monetary")) \
+    .show()
